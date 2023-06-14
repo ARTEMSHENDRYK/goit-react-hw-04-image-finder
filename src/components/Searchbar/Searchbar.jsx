@@ -1,49 +1,44 @@
-import React from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import css from "./Searchbar.module.css"
 
-class Searchbar extends React.Component {
-  state = {
-    searchQuery: '',
-  }
+function Searchbar({ onSubmit }) {
+  const [searchQuery, setSearchQuery] = useState("");
 
-  handleInputChange = evt => {
-    this.setState({ searchQuery: evt.target.value.toLowerCase() });
+  function handleInputChange(evt) {
+    setSearchQuery(evt.target.value.toLowerCase());
   } 
   
-
-  handleSubmit = evt => {
+  function handleSubmit(evt) {
     evt.preventDefault();
 
-    if (!this.state.searchQuery.trim()) {
+    if (!searchQuery.trim()) {
       alert("Some search query needed.");
       return;
     }
 
-    this.props.onSubmit(this.state);
-    this.setState({searchQuery: ''});
+    onSubmit(searchQuery);
+    setSearchQuery("");
   }
 
-  render() {
-    return (
-      <header className={css.Searchbar}>
-        <form className={css.SearchForm} onSubmit={this.handleSubmit}>
-          <input
-            className={css["SearchForm-input"]}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.searchQuery}
-            onChange={this.handleInputChange}
-          />
-          <button type="submit" className={css["SearchForm-button"]}>
-            <span className={css["SearchForm-button-label"]}>Search</span>
-          </button>
-        </form>
-      </header>
-    )
-  }
+  return (
+    <header className={css.Searchbar}>
+      <form className={css.SearchForm} onSubmit={handleSubmit}>
+        <input
+          className={css["SearchForm-input"]}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={searchQuery}
+          onChange={handleInputChange}
+        />
+        <button type="submit" className={css["SearchForm-button"]}>
+          <span className={css["SearchForm-button-label"]}>Search</span>
+        </button>
+      </form>
+    </header>
+  )
 }
 
 Searchbar.propTypes = {

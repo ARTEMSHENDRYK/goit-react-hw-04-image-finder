@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import PixabayAPI from "api/PixabayAPI";
 import Searchbar from "./Searchbar/Searchbar";
 import ImageGallery from "./ImageGallery/ImageGallery";
@@ -8,77 +8,82 @@ import css from "./App.module.css";
 
 const pixabayAPI = new PixabayAPI();
 
-class App extends React.Component {
-  state = {
-    searchQuery: '',
-    hits: [],
-    hitsFlag: false,
-    isLoading: false,
-    loadMore: false,
-  }
+function App() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [hits, setHits] = useState([]);
+  const [hitsFlag, setHitsFlag] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
 
-  async componentDidUpdate(_prevProps, prevState) {
-    const { searchQuery, hits, hitsFlag, loadMore } = this.state;  
+  useEffect(() => {
+    if (!searchQuery) {
+      return;
+    }
 
-    if (prevState.searchQuery !== searchQuery) {
-      this.setState({ isLoading: true });
-      pixabayAPI.resetPage();
-      pixabayAPI.query = searchQuery;
-      this.setState({ hits: [] });
+    const fetchData = async () => {
       const response = await pixabayAPI.fetchHits();
-      this.setState({ hits: response.hits });
-      this.checkHits(response.hits.length);
-      this.setState({ isLoading: false });
+      setHits(response.hits);
+      checkHits(response.hits.length);
+    }
+
+    setIsLoading(true);
+    pixabayAPI.resetPage();
+    pixabayAPI.query = searchQuery;
+    setHits([]);
+    fetchData();
+    setIsLoading(false);
+  }, [searchQuery]) 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await pixabayAPI.fetchHits();
+      setHits(hits => ([...hits, ...response.hits]));
+      checkHits(response.hits.length);
     }
 
     if (loadMore && hitsFlag) {
-      this.smoothScroll();
-      const response = await pixabayAPI.fetchHits();
-      this.setState({ hits: [...hits, ...response.hits] });
-      this.checkHits(response.hits.length);
-      this.setState({ isLoading: false });
-      this.setState({ loadMore: false });
+      smoothScroll();
+      fetchData();
+      setIsLoading(false);
+      setLoadMore(false);
     }
+  }, [loadMore, hitsFlag])
+  
+  function handleSubmit(searchQuery) {
+    setSearchQuery(searchQuery.trim());
   }
 
-  handleSubmit = ({ searchQuery }) => {
-    this.setState({ searchQuery: searchQuery.trim() });
+  function handleLoadMore() {
+    setIsLoading(true);
+    setLoadMore(true);
   }
 
-  handleLoadMore = () => {
-    this.setState({ isLoading: true });
-    this.setState({ loadMore: true });
-  }
-
-  checkHits = (hitsLength) => {
+  function checkHits(hitsLength) {
     if (hitsLength === pixabayAPI.perPage) {
-      this.setState({ hitsFlag: true })
+      setHitsFlag(true)
     }
     else {
-      this.setState({ hitsFlag: false })
+      setHitsFlag(false)
     }
   }      
 
-  smoothScroll() {
+  function smoothScroll() {
     const { height: cardHeight } = document.querySelector("ul").firstElementChild.getBoundingClientRect();
+    console.log(cardHeight);
     window.scrollBy({
       top: cardHeight * 2,
       behavior: "smooth",
     });
   }
 
-  render() {
-    const { hits, isLoading, hitsFlag } = this.state; 
-
-    return(
-      <div className={css.App}>
-        <Searchbar onSubmit={this.handleSubmit} />
-        {hits.length > 0 && <ImageGallery hits={hits} />}
-        {isLoading && <Loader />} 
-        {hitsFlag && <Button handleLoadMore={this.handleLoadMore} />}
-      </div>
-    );
-  }
+  return(
+    <div className={css.App}>
+      <Searchbar onSubmit={handleSubmit} />
+      {hits.length > 0 && <ImageGallery hits={hits} />}
+      {isLoading && <Loader />} 
+      {hitsFlag && <Button handleLoadMore={handleLoadMore} />}
+    </div>
+  );
 };
 
 export default App;
