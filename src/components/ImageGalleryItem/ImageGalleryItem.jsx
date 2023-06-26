@@ -10,12 +10,12 @@ function ImageGalleryItem({ tags, webformatURL, largeImageURL }) {
     setShowModal(!showModal);
   }
 
-  function openModal(largeImageURL) {
+  function openModal() {
     toggleModal();
   }
 
   return (
-    <li className={css.ImageGalleryItem} onClick={() => { openModal(largeImageURL) }}>
+    <li className={css.ImageGalleryItem} onClick={() => { openModal() }}>
       <img
         className={css["ImageGalleryItem-image"]}
         src={webformatURL}

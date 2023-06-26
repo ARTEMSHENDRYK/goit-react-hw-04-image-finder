@@ -5,6 +5,7 @@ import ImageGallery from "./ImageGallery/ImageGallery";
 import Loader from "./Loader/Loader";
 import Button from "./Button/Button";
 import css from "./App.module.css";
+// import { FcBusinessContact, FcCellPhone } from 'react-icons/fc';
 
 const pixabayAPI = new PixabayAPI();
 
